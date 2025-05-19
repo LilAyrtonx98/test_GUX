@@ -1,0 +1,50 @@
+# docker-compose.yml (nivel raíz del proyecto)
+
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./tareas-api
+    container_name: tareas_backend
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./tareas-api:/var/www/html
+    depends_on:
+      - mysql
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: tareas_db
+      DB_USERNAME: root
+      DB_PASSWORD: secret
+
+  frontend:
+    build:
+      context: ./tareas-frontend
+    container_name: tareas_frontend
+    ports:
+      - "3001:3000"
+    restart: unless-stopped
+    volumes:
+      - ./tareas-frontend:/app
+    depends_on:
+      - backend
+
+  mysql:
+    image: mysql:8.0
+    container_name: tareas_mysql
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: tareas_db
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
+    name: tareas_db_data
